@@ -1,1 +1,28 @@
-<p>amortization-table works!</p>
+@if (amortizationPlan && amortizationPlan.length > 0) {
+    <table>
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Restschuld</th>
+          <th>Zinsen</th>
+          <th>Tilgung</th>
+          <th>Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of dataSource; track entry.date) { 
+          <tr>
+            <td>{{ formatDate(entry.date) }}</td>
+            <td>{{ formatCurrency(entry.remainingDebt) }}</td>
+            <td>{{ formatCurrency(entry.interest) }}</td>
+            <td>{{ formatCurrency(entry.repayment) }}</td>
+            <td>{{ formatCurrency(entry.payment) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else if (amortizationPlan === null) {
+    <p>Bitte Darlehensdaten eingeben und berechnen.</p>
+  } @else { // Dieser Fall deckt ab: amortizationPlan ist nicht null, aber length === 0
+    <p>Keine Daten vorhanden.</p>
+  }

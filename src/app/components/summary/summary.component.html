@@ -1,1 +1,6 @@
-<p>summary works!</p>
+@if (summaryData) {
+    <h3>Zusammenfassung</h3>
+    <p>Restschuld am Ende der Zinsbindung: {{ remainingDebtFormatted }}</p>
+    <p>Gezahlte Gesamtzinsen: {{ totalInterestPaidFormatted }}</p>
+    <p>Gezahlte Gesamttilgung: {{ totalRepaymentPaidFormatted }}</p>
+  }

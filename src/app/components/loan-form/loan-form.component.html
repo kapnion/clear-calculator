@@ -1,1 +1,68 @@
-<p>loan-form works!</p>
+<form [formGroup]="loanForm" (ngSubmit)="onSubmit()">
+    <div>
+      <label for="loanAmount">Darlehensbetrag:</label>
+      <input type="number" id="loanAmount" formControlName="loanAmount">
+
+      @if (loanForm.get('loanAmount')?.invalid && (loanForm.get('loanAmount')?.dirty || loanForm.get('loanAmount')?.touched)) {
+        <div class="error-messages"> 
+          @if (loanForm.get('loanAmount')?.errors?.['required']) {
+            <div>Darlehensbetrag ist erforderlich.</div>
+          }
+          @if (loanForm.get('loanAmount')?.errors?.['min']) {
+            <div>Darlehensbetrag muss größer als 0 sein.</div>
+          }
+
+        </div>
+      }
+    </div>
+  
+    <div>
+      <label for="interestRate">Sollzins (in %):</label>
+      <input type="number" id="interestRate" formControlName="interestRate">
+
+      @if (loanForm.get('interestRate')?.invalid && (loanForm.get('interestRate')?.dirty || loanForm.get('interestRate')?.touched)) {
+        <div class="error-messages">
+          @if (loanForm.get('interestRate')?.errors?.['required']) {
+            <div>Sollzins ist erforderlich.</div>
+          }
+          @if (loanForm.get('interestRate')?.errors?.['min']) {
+            <div>Sollzins muss größer als 0 sein.</div>
+          }
+        </div>
+      }
+    </div>
+  
+    <div>
+      <label for="initialRepayment">Anfängliche Tilgung (in %):</label>
+      <input type="number" id="initialRepayment" formControlName="initialRepayment">
+
+      @if (loanForm.get('initialRepayment')?.invalid && (loanForm.get('initialRepayment')?.dirty || loanForm.get('initialRepayment')?.touched)) {
+        <div class="error-messages">
+          @if (loanForm.get('initialRepayment')?.errors?.['required']) {
+            <div>Anfängliche Tilgung ist erforderlich.</div>
+          }
+          @if (loanForm.get('initialRepayment')?.errors?.['min']) {
+            <div>Anfängliche Tilgung muss größer als 0 sein.</div>
+          }
+        </div>
+      }
+    </div>
+  
+    <div>
+      <label for="interestFixation">Zinsbindung (in Jahren):</label>
+      <input type="number" id="interestFixation" formControlName="interestFixation">
+
+      @if (loanForm.get('interestFixation')?.invalid && (loanForm.get('interestFixation')?.dirty || loanForm.get('interestFixation')?.touched)) {
+        <div class="error-messages">
+          @if (loanForm.get('interestFixation')?.errors?.['required']) {
+            <div>Zinsbindung ist erforderlich.</div>
+          }
+          @if (loanForm.get('interestFixation')?.errors?.['min']) {
+            <div>Zinsbindung muss größer als 0 sein.</div>
+          }
+        </div>
+      }
+    </div>
+  
+    <button type="submit" [disabled]="loanForm.invalid">Berechnen</button>
+  </form>
