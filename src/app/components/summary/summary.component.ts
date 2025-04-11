@@ -6,7 +6,7 @@ import { SummaryData } from '../../models/summary-data';
 @Component({
   selector: 'app-summary',
   standalone: true,
-  imports: [CommonModule], // Benötigte Module importieren
+  imports: [CommonModule], 
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss']
 })

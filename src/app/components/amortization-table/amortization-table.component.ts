@@ -6,7 +6,7 @@ import { AmortizationEntry } from '../../models/amortization-entry';
 @Component({
   selector: 'app-amortization-table',
   standalone: true,
-  imports: [CommonModule], // Benötigte Module importieren
+  imports: [CommonModule], 
   templateUrl: './amortization-table.component.html',
   styleUrls: ['./amortization-table.component.scss']
 })
@@ -18,7 +18,7 @@ export class AmortizationTableComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['amortizationPlan'] && this.amortizationPlan) {
-      this.dataSource = [...this.amortizationPlan]; // Create a new array for change detection
+      this.dataSource = [...this.amortizationPlan]; 
     }
   }
 

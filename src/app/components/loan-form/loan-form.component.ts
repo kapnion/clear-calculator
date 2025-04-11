@@ -18,20 +18,45 @@ export class LoanFormComponent {
 
   constructor(private fb: FormBuilder) {
     this.loanForm = this.fb.group({
+      // Darlehensbetrag: Weiterhin größer 0
       loanAmount: ['', [Validators.required, Validators.min(1)]],
-      interestRate: ['', [Validators.required, Validators.min(0.01)]],
-      initialRepayment: ['', [Validators.required, Validators.min(1)]],
-      interestFixation: ['', [Validators.required, Validators.min(1)]]
+
+      // Sollzins: > 0 und <= 100
+      interestRate: ['', [
+        Validators.required,
+        Validators.min(0.0000001), // Stellt sicher, dass es > 0 ist
+        Validators.max(100)        // Maximal 100
+      ]],
+
+      // Anfängliche Tilgung: > 0 und <= 100
+      initialRepayment: ['', [
+        Validators.required,
+        Validators.min(0.0000001), // Stellt sicher, dass es > 0 ist
+        Validators.max(100)        // Maximal 100
+      ]],
+
+      // Zinsbindung: Integer, >= 1 und <= 100
+      interestFixation: ['', [
+        Validators.required,
+        Validators.min(1),         // Mindestens 1
+        Validators.max(100),       // Maximal 100
+        Validators.pattern(/^[0-9]+$/) // Stellt sicher, dass es eine positive Ganzzahl ist
+      ]]
     });
   }
+
+
+  get loanAmountControl() { return this.loanForm.get('loanAmount'); }
+  get interestRateControl() { return this.loanForm.get('interestRate'); }
+  get initialRepaymentControl() { return this.loanForm.get('initialRepayment'); }
+  get interestFixationControl() { return this.loanForm.get('interestFixation'); }
 
   onSubmit(): void {
     if (this.loanForm.valid) {
       this.loanDataSubmitted.emit(this.loanForm.value as LoanData);
     } else {
-      // Formular ist ungültig.  Hier könntest du Validierungsfehler anzeigen.
       console.log("Form is invalid");
-      this.loanForm.markAllAsTouched();
+      this.loanForm.markAllAsTouched(); // Markiere alle Felder als berührt, um Fehler anzuzeigen
     }
   }
 }
