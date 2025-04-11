@@ -21,29 +21,38 @@ export class AmortizationService {
 
   /**
    * Berechnet den detaillierten monatlichen Tilgungsplan.
-   * Stellt sicher, dass die Rate mindestens die anfänglichen Zinsen deckt.
+   * Wirft einen Fehler, wenn die berechnete Rate die anfänglichen Zinsen nicht deckt.
+   *
+   * @param loanData Die Eingabedaten für das Darlehen.
+   * @returns Ein Array von AmortizationEntry-Objekten, das den Plan darstellt.
+   * @throws Error, wenn die Rate die Zinsen nicht deckt.
    */
   calculateAmortizationPlan(loanData: LoanData): AmortizationEntry[] {
     if (!this.isValidLoanData(loanData)) {
-      console.error("Invalid loan data provided to calculateAmortizationPlan.");
-      return [];
+      // Technisch gesehen sollte dies nicht passieren, wenn das Formular validiert
+      throw new Error("Ungültige Darlehensdaten übergeben.");
     }
 
     const { loanAmount, interestRate, initialRepayment, interestFixation } = loanData;
     const monthlyInterestRate = interestRate / this.PERCENT_FACTOR / this.MONTHS_IN_YEAR;
     const numberOfPayments = interestFixation * this.MONTHS_IN_YEAR;
 
-    // Konstante monatliche Rate berechnen (stellt sicher, dass Zinsen gedeckt sind)
+    // Konstante monatliche Rate berechnen (strikt nach initialer Tilgung)
     const monthlyPayment = this.calculateMonthlyPayment(loanAmount, interestRate, initialRepayment);
+debugger;
+    const firstMonthInterest = this.round(loanAmount * monthlyInterestRate);
 
-    // Frühzeitige Prüfung, ob die Rate überhaupt Sinn macht (sollte durch calculateMonthlyPayment abgedeckt sein, aber doppelt hält besser)
-    const firstMonthInterestCheck = this.round(loanAmount * monthlyInterestRate);
-    if (monthlyPayment < firstMonthInterestCheck) {
-         // Dieser Fall sollte durch die Anpassung in calculateMonthlyPayment nicht mehr eintreten
-         console.warn(`WARNUNG: Monatliche Rate (${monthlyPayment}) deckt nicht die ersten Zinsen (${firstMonthInterestCheck}). Tilgungsplan möglicherweise nicht sinnvoll.`);
-         // Man könnte hier auch abbrechen: return [];
+    // Prüfen, ob die Rate die Zinsen des ersten Monats deckt UND eine Tilgung ermöglicht
+    // Wenn Rate <= Zins, ist die Tilgung im ersten Monat <= 0.
+    if (monthlyPayment <= firstMonthInterest) {
+      // Erstelle eine spezifische Fehlermeldung
+      let errorMsg = `Die berechnete monatliche Rate (${monthlyPayment.toFixed(2)} €) ist nicht ausreichend, um die Zinsen des ersten Monats (${firstMonthInterest.toFixed(2)} €) vollständig zu decken und gleichzeitig eine Tilgung zu ermöglichen.`;
+      if (monthlyPayment === firstMonthInterest) {
+        errorMsg = `Die berechnete monatliche Rate (${monthlyPayment.toFixed(2)} €) deckt exakt die Zinsen des ersten Monats (${firstMonthInterest.toFixed(2)} €). Es findet keine Tilgung statt, das Darlehen wird nicht zurückgezahlt.`;
+      }
+      errorMsg += " Bitte Zinssatz verringern oder anfängliche Tilgung erhöhen.";
+      throw new Error(errorMsg);
     }
-
 
     const amortizationEntries: AmortizationEntry[] = [];
     let currentDate = this.getActualMonthEndDate(new Date());
@@ -55,11 +64,11 @@ export class AmortizationService {
     for (let i = 0; i < numberOfPayments; i++) {
       const previousEntry = amortizationEntries[amortizationEntries.length - 1];
 
-      // Wenn die Schuld bereits getilgt ist, füge Null-Einträge hinzu
-      // Wichtig: Prüfe auf < 0.005 wegen potenzieller Rundungsdifferenzen statt === 0
+      // Prüfung auf bereits getilgt (mit kleiner Toleranz)
       if (Math.abs(previousEntry.remainingDebt) < 0.005) {
         amortizationEntries.push(this.createZeroEntry(currentDate));
       } else {
+        // Berechne nächsten Eintrag (mit Logik zur Begrenzung der letzten Rate)
         const nextEntry = this.calculateNextEntry(
           previousEntry.remainingDebt,
           monthlyPayment,
@@ -67,7 +76,7 @@ export class AmortizationService {
           currentDate
         );
         amortizationEntries.push(nextEntry);
-        remainingDebt = nextEntry.remainingDebt; // Update für Konsistenz (obwohl nicht mehr direkt im Loop gebraucht)
+        remainingDebt = nextEntry.remainingDebt; // Nur zur Info, wird nicht mehr direkt gebraucht
       }
       currentDate = this.getNextMonthEndDate(currentDate);
     }
@@ -103,44 +112,34 @@ export class AmortizationService {
   /**
    * Validiert die Eingabedaten für die Darlehensberechnung.
    */
-  isValidLoanData(loanData: LoanData | null | undefined): boolean {
+   isValidLoanData(loanData: LoanData | null | undefined): boolean {
     if (!loanData) return false;
     const { loanAmount, interestRate, initialRepayment, interestFixation } = loanData;
+    // Stellt sicher, dass alle Werte positive Zahlen sind
     return (
       typeof loanAmount === 'number' && loanAmount > 0 &&
-      typeof interestRate === 'number' && interestRate > 0 && // Zinssatz muss > 0 sein
-      typeof initialRepayment === 'number' && initialRepayment > 0 && // Tilgung muss > 0 sein
+      typeof interestRate === 'number' && interestRate > 0 &&
+      typeof initialRepayment === 'number' && initialRepayment > 0 &&
       typeof interestFixation === 'number' && interestFixation > 0
     );
   }
 
+
   // --- Private Helper Methods ---
 
   /**
-   * Berechnet die konstante monatliche Rate.
-   * Stellt sicher, dass die Rate mindestens die Zinsen des ersten Monats deckt.
+   * Berechnet die konstante monatliche Rate (strikt nach anfänglicher Tilgung).
    */
   private calculateMonthlyPayment(loanAmount: number, interestRate: number, initialRepayment: number): number {
-    const monthlyInterestRate = interestRate / this.PERCENT_FACTOR / this.MONTHS_IN_YEAR;
-
-    // 1. Berechne die Rate basierend auf der gewünschten anfänglichen Tilgung
-    const desiredAnnualPayment = loanAmount * (interestRate / this.PERCENT_FACTOR + initialRepayment / this.PERCENT_FACTOR);
-    const desiredMonthlyPayment = this.round(desiredAnnualPayment / this.MONTHS_IN_YEAR);
-
-    // 2. Berechne die Rate, die nur die Zinsen des ersten Monats deckt
-    const firstMonthInterest = this.round(loanAmount * monthlyInterestRate);
-
-    // 3. Wähle die höhere der beiden Raten, um sicherzustellen, dass Zinsen immer gedeckt sind
-    //    und eine (minimale) Tilgung stattfindet, wenn Zins = 0 wäre (theoretisch)
-    //    Wenn firstMonthInterest 0 ist, wird desiredMonthlyPayment verwendet (da initialRepayment > 0 sein muss).
-    return Math.max(desiredMonthlyPayment, firstMonthInterest);
+    const annualPayment = loanAmount * (interestRate / this.PERCENT_FACTOR + initialRepayment / this.PERCENT_FACTOR);
+    return this.round(annualPayment / this.MONTHS_IN_YEAR);
   }
 
   /**
    * Erstellt den Auszahlungseintrag.
    */
   private createDisbursementEntry(loanAmount: number, date: Date): AmortizationEntry {
-    return {
+     return {
       date: date,
       remainingDebt: this.round(-loanAmount),
       interest: 0.00,
@@ -151,7 +150,7 @@ export class AmortizationService {
 
   /**
    * Berechnet den nächsten Tilgungsplan-Eintrag (Ratenzahlung).
-   * Berücksichtigt den Fall, dass die Tilgung die Restschuld übersteigen könnte.
+   * Beinhaltet Logik zur Begrenzung der letzten Rate auf die Restschuld.
    */
   private calculateNextEntry(
     previousRemainingDebt: number,
@@ -160,46 +159,38 @@ export class AmortizationService {
     currentDate: Date
   ): AmortizationEntry {
     const interest = this.round(-previousRemainingDebt * monthlyInterestRate);
-
-    // Theoretische Tilgung berechnen
     let repaymentInternal = monthlyPayment - interest;
-
-    // Positive Restschuld für Vergleich
     const remainingDebtPositive = -previousRemainingDebt;
 
-    // Sicherstellen, dass die Tilgung nicht höher ist als die (positive) Restschuld
-    // Dies ist wichtig für die letzte Rate oder wenn die Rate nur knapp die Zinsen deckt.
+    // Begrenze Tilgung auf Restschuld (wichtig für letzte Rate)
     if (repaymentInternal > remainingDebtPositive) {
-      repaymentInternal = remainingDebtPositive; // Tilgung auf die exakte Restschuld begrenzen
+      repaymentInternal = remainingDebtPositive;
     }
 
-    // Neue Restschuld berechnen und runden
     let newRemainingDebt = this.round(previousRemainingDebt + repaymentInternal);
 
-    // Korrektur: Wenn die Restschuld extrem nahe bei Null ist, auf Null setzen.
-    // Wichtig nach der Begrenzung der Tilgung.
+    // Setze auf exakt 0, wenn sehr nah dran
     if (Math.abs(newRemainingDebt) < 0.005) {
         newRemainingDebt = 0;
     }
 
-    // Die tatsächliche Zahlung für diesen Monat ist Zins + tatsächliche Tilgung
-    // Normalerweise ist das `monthlyPayment`, aber bei der letzten Rate kann es weniger sein.
+    // Die tatsächliche Zahlung ist Zins + tatsächliche Tilgung
     const actualPayment = this.round(interest + repaymentInternal);
 
     return {
       date: new Date(currentDate),
       remainingDebt: newRemainingDebt,
       interest: interest,
-      repayment: this.round(repaymentInternal), // Gerundeter Wert für Anzeige/Summe
+      repayment: this.round(repaymentInternal),
       payment: actualPayment // Kann von monthlyPayment abweichen (letzte Rate)
     };
   }
 
   /**
-   * Erstellt einen "Nullzeilen"-Eintrag, wenn das Darlehen bereits getilgt ist.
+   * Erstellt einen "Nullzeilen"-Eintrag.
    */
   private createZeroEntry(currentDate: Date): AmortizationEntry {
-    return {
+     return {
       date: new Date(currentDate),
       remainingDebt: 0,
       interest: 0,

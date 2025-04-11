@@ -22,17 +22,34 @@ export class AppComponent {
   loanData: LoanData | null = null;
   amortizationPlan: AmortizationEntry[] | null = null;
   summaryData: SummaryData | null = null;
+  calculationError: string | null = null; // Property für Fehlermeldung
 
   constructor(private amortizationService: AmortizationService) {}
 
   onLoanDataSubmitted(loanData: LoanData): void {
-    if (this.amortizationService.isValidLoanData(loanData)) {
-      this.loanData = loanData;
+    // Setze Fehler und alte Daten zurück vor neuer Berechnung
+    this.calculationError = null;
+    this.amortizationPlan = null;
+    this.summaryData = null;
+    this.loanData = loanData; // Speichere die Eingabedaten
+
+    // Prüfe Gültigkeit der Formulardaten (obwohl Formular es tun sollte)
+    if (!this.amortizationService.isValidLoanData(loanData)) {
+       this.calculationError = "Ungültige Eingabedaten."; // Sollte nicht passieren
+       return;
+    }
+
+    try {
+      // Rufe die Berechnungsmethode auf
       this.amortizationPlan = this.amortizationService.calculateAmortizationPlan(loanData);
+      // Berechne Zusammenfassung nur bei erfolgreicher Plan-Erstellung
       this.summaryData = this.amortizationService.calculateSummaryData(this.amortizationPlan);
-    } else {
-      //Ungültige Daten behandeln (z.B. Fehlermeldung anzeigen)
-      alert("Bitte geben Sie gültige Darlehensdaten ein.");
+    } catch (error: any) {
+ debugger;
+      console.error("Error calculating amortization plan:", error);
+
+      this.calculationError = error.message || "Ein unbekannter Fehler ist bei der Berechnung aufgetreten.";
+      // Stelle sicher, dass keine alten Daten angezeigt werden
       this.amortizationPlan = null;
       this.summaryData = null;
     }

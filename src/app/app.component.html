@@ -2,9 +2,18 @@
   <h1>Tilgungsplan-Rechner</h1>
 
   <app-loan-form (loanDataSubmitted)="onLoanDataSubmitted($event)"></app-loan-form>
-
-  <app-amortization-table [amortizationPlan]="amortizationPlan"></app-amortization-table>
-
-
-  <app-summary [summaryData]="summaryData"></app-summary>
+  @if (calculationError) {
+    <div class="calculation-error">
+      <strong>Fehler bei der Berechnung:</strong>
+      <p>{{ calculationError }}</p>
+    </div>
+  }
+  
+ 
+  @if (!calculationError) {
+    <app-amortization-table [amortizationPlan]="amortizationPlan"></app-amortization-table>
+    <app-summary [summaryData]="summaryData"></app-summary>
+  }
+  <div class="footer">
+    <p>&copy; 2023 Tilgungsplan-Rechner. Alle Rechte vorbehalten.</p>
 </div>
