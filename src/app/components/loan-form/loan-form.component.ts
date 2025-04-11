@@ -1,62 +1,81 @@
-import { Component, Output, EventEmitter } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoanData } from '../../models/loan-data';
+import { FORM_CONTROLS, VALIDATION_PARAMS } from './loan-form.constants';
+import { greaterThanZeroValidator } from './loan-form.validators';
 
 @Component({
   selector: 'app-loan-form',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule], // Benötigte Module importieren
+  imports: [
+    ReactiveFormsModule,
+    CommonModule
+  ],
   templateUrl: './loan-form.component.html',
   styleUrls: ['./loan-form.component.scss']
 })
-export class LoanFormComponent {
+export class LoanFormComponent implements OnInit {
   @Output() loanDataSubmitted = new EventEmitter<LoanData>();
 
-  loanForm: FormGroup;
+  loanForm!: FormGroup;
+
+  readonly validationParams = VALIDATION_PARAMS;
+  readonly formControlNames = FORM_CONTROLS;
 
   constructor(private fb: FormBuilder) {
+    this.initializeForm();
+  }
+
+  ngOnInit(): void {
+    // ngOnInit is a good place for logic after component initialization
+    // If form initialization was complex, it could go here.
+  }
+
+  private initializeForm(): void {
     this.loanForm = this.fb.group({
-      // Darlehensbetrag: Weiterhin größer 0
-      loanAmount: ['', [Validators.required, Validators.min(1)]],
-
-      // Sollzins: > 0 und <= 100
-      interestRate: ['', [
+      [FORM_CONTROLS.LOAN_AMOUNT]: ['', [
         Validators.required,
-        Validators.min(0.0000001), // Stellt sicher, dass es > 0 ist
-        Validators.max(100)        // Maximal 100
+        Validators.min(VALIDATION_PARAMS.MIN_LOAN_AMOUNT)
       ]],
-
-      // Anfängliche Tilgung: > 0 und <= 100
-      initialRepayment: ['', [
+      [FORM_CONTROLS.INTEREST_RATE]: ['', [
         Validators.required,
-        Validators.min(0.0000001), // Stellt sicher, dass es > 0 ist
-        Validators.max(100)        // Maximal 100
+        Validators.min(VALIDATION_PARAMS.MIN_INTEREST_RATE),
+        Validators.max(VALIDATION_PARAMS.MAX_PERCENTAGE)
       ]],
-
-      // Zinsbindung: Integer, >= 1 und <= 100
-      interestFixation: ['', [
+      [FORM_CONTROLS.INITIAL_REPAYMENT]: ['', [
         Validators.required,
-        Validators.min(1),         // Mindestens 1
-        Validators.max(100),       // Maximal 100
-        Validators.pattern(/^[0-9]+$/) // Stellt sicher, dass es eine positive Ganzzahl ist
+        greaterThanZeroValidator(),
+        Validators.max(VALIDATION_PARAMS.MAX_PERCENTAGE)
+      ]],
+      [FORM_CONTROLS.INTEREST_FIXATION]: ['', [
+        Validators.required,
+        Validators.min(VALIDATION_PARAMS.MIN_FIXATION_YEARS),
+        Validators.max(VALIDATION_PARAMS.MAX_FIXATION_YEARS),
+        Validators.pattern(VALIDATION_PARAMS.INTEGER_PATTERN)
       ]]
     });
   }
 
-
-  get loanAmountControl() { return this.loanForm.get('loanAmount'); }
-  get interestRateControl() { return this.loanForm.get('interestRate'); }
-  get initialRepaymentControl() { return this.loanForm.get('initialRepayment'); }
-  get interestFixationControl() { return this.loanForm.get('interestFixation'); }
+  get loanAmountControl(): AbstractControl | null { return this.loanForm.get(FORM_CONTROLS.LOAN_AMOUNT); }
+  get interestRateControl(): AbstractControl | null { return this.loanForm.get(FORM_CONTROLS.INTEREST_RATE); }
+  get initialRepaymentControl(): AbstractControl | null { return this.loanForm.get(FORM_CONTROLS.INITIAL_REPAYMENT); }
+  get interestFixationControl(): AbstractControl | null { return this.loanForm.get(FORM_CONTROLS.INTEREST_FIXATION); }
 
   onSubmit(): void {
     if (this.loanForm.valid) {
-      this.loanDataSubmitted.emit(this.loanForm.value as LoanData);
+      const formData = this.loanForm.value;
+      const loanData: LoanData = {
+        loanAmount: Number(formData[FORM_CONTROLS.LOAN_AMOUNT]),
+        interestRate: Number(formData[FORM_CONTROLS.INTEREST_RATE]),
+        initialRepayment: Number(formData[FORM_CONTROLS.INITIAL_REPAYMENT]),
+        interestFixation: Number(formData[FORM_CONTROLS.INTEREST_FIXATION])
+      };
+      console.log('Form Submitted:', loanData);
+      this.loanDataSubmitted.emit(loanData);
     } else {
-      console.log("Form is invalid");
-      this.loanForm.markAllAsTouched(); // Markiere alle Felder als berührt, um Fehler anzuzeigen
+      console.log("Form is invalid. Marking fields as touched.");
+      this.loanForm.markAllAsTouched();
     }
   }
 }
