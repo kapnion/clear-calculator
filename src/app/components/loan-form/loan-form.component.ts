@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoanData } from '../../models/loan-data';
 import { FORM_CONTROLS, VALIDATION_PARAMS } from './loan-form.constants';
