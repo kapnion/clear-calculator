@@ -1,0 +1,110 @@
+:host {
+    display: block; // Stellt sicher, dass die Komponente Platz einnimmt
+    margin-bottom: 32px; // Abstand nach dem Formular
+  }
+  
+  form {
+    display: grid;
+    grid-template-columns: 1fr; // Standard: Einspaltig
+    gap: 16px; // Abstand zwischen den Formularzeilen
+  
+    // Zweispaltiges Layout auf größeren Bildschirmen
+    @media (min-width: 600px) {
+      grid-template-columns: repeat(2, 1fr); // Zwei Spalten
+      gap: 20px 24px; // Zeilen- und Spaltenabstand
+  
+      // Button über die volle Breite der letzten Zeile (wenn nötig)
+      button[type="submit"] {
+         grid-column: 1 / -1; // Nimmt alle Spalten ein
+         justify-self: start; // Button linksbündig
+         width: auto; // Breite automatisch anpassen
+      }
+    }
+  }
+  
+  // Styling für jede Formulargruppe (Label + Input + Fehler)
+  div {
+    // Kein extra Margin mehr nötig dank Grid Gap
+  }
+  
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--fluent-gray-130);
+  }
+  
+  input[type="number"] {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 2px;
+    background-color: var(--fluent-white);
+    color: var(--fluent-gray-160);
+    transition: border-color 0.1s linear;
+  
+    &:hover {
+      border-color: var(--input-border-color-hover);
+    }
+  
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      border-color: var(--input-border-color-focus);
+      box-shadow: 0 0 0 1px var(--input-border-color-focus); // Fokus-Indikator
+    }
+  
+    // Styling für die Pfeile (kann browserabhängig sein)
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      // Optional: Pfeile ausblenden oder stylen
+      // appearance: none;
+      // margin: 0;
+    }
+    // Für Firefox
+    -moz-appearance: textfield;
+  }
+  
+  .error-messages {
+    margin-top: 4px;
+    color: var(--fluent-red-dark);
+    font-size: 12px;
+  
+    div {
+      margin-bottom: 2px;
+    }
+  }
+  
+  button[type="submit"] {
+    padding: 8px 20px;
+    background-color: var(--fluent-blue);
+    color: var(--fluent-white);
+    border: 1px solid transparent; 
+    border-radius: 2px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.1s linear, border-color 0.1s linear;
+    min-height: 32px; 
+  
+    &:hover:not(:disabled) {
+      background-color: var(--fluent-blue-hover);
+    }
+  
+    &:active:not(:disabled) {
+      background-color: var(--fluent-blue-active);
+    }
+  
+    &:focus,
+    &:focus-visible {
+      outline: 2px solid var(--fluent-gray-160); 
+      outline-offset: 1px;
+    }
+  
+  
+    &:disabled {
+      background-color: var(--fluent-gray-30);
+      color: var(--fluent-gray-90);
+      cursor: not-allowed;
+    }
+  }

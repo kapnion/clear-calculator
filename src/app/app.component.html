@@ -1,8 +1,10 @@
-<h1>Tilgungsplan-Rechner</h1>
+<div class="app-container">
+  <h1>Tilgungsplan-Rechner</h1>
 
-<app-loan-form (loanDataSubmitted)="onLoanDataSubmitted($event)"></app-loan-form>
+  <app-loan-form (loanDataSubmitted)="onLoanDataSubmitted($event)"></app-loan-form>
 
-<app-amortization-table [amortizationPlan]="amortizationPlan"></app-amortization-table>
+  <app-amortization-table [amortizationPlan]="amortizationPlan"></app-amortization-table>
 
 
-<app-summary [summaryData]="summaryData"></app-summary>
+  <app-summary [summaryData]="summaryData"></app-summary>
+</div>

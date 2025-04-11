@@ -1,1 +1,80 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap'); // Segoe UI laden (Fallback, falls nicht lokal installiert)
+
+// Fluent UI Farbpalette (Beispiele)
+:root {
+  --fluent-blue: #0078D4;
+  --fluent-blue-hover: #106ebe;
+  --fluent-blue-active: #005a9e;
+  --fluent-gray-10: #faf9f8;  // Sehr heller Hintergrund
+  --fluent-gray-20: #f3f2f1;  // Standard Hintergrund
+  --fluent-gray-30: #edebe9;  // Subtiler Hintergrund
+  --fluent-gray-50: #e1dfdd;  // Rahmen
+  --fluent-gray-90: #c8c6c4;  // Deaktivierte Rahmen/Text
+  --fluent-gray-130: #605e5c; // Sekundärer Text
+  --fluent-gray-160: #323130; // Primärer Text
+  --fluent-red-dark: #a4262c; // Fehlertext
+  --fluent-white: #ffffff;
+  --fluent-shadow-depth-4: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); // Subtiler Schatten
+  --input-border-color: var(--fluent-gray-90);
+  --input-border-color-hover: var(--fluent-gray-130);
+  --input-border-color-focus: var(--fluent-blue);
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: var(--fluent-gray-20);
+  color: var(--fluent-gray-160);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+.app-container {
+  max-width: 900px; 
+  margin: 30px auto; 
+  padding: 24px;
+  background-color: var(--fluent-white);
+  border-radius: 4px;
+  box-shadow: var(--fluent-shadow-depth-4);
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  color: var(--fluent-gray-160);
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--fluent-gray-160);
+}
+
+button,
+input[type="number"] {
+  font-family: inherit; 
+  font-size: inherit;
+  box-sizing: border-box; 
+}
+
+
+@media (max-width: 960px) {
+  .app-container {
+    margin: 16px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 20px;
+  }
+  h3 {
+    font-size: 16px;
+  }
+}

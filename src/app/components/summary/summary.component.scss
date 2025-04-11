@@ -1,0 +1,32 @@
+:host {
+    display: block;
+    margin-top: 32px; 
+    padding: 20px;
+    background-color: var(--fluent-gray-10); 
+    border-radius: 4px;
+    border: 1px solid var(--fluent-gray-50);
+  }
+  
+  h3 {
+    margin-top: 0; 
+    border-bottom: 1px solid var(--fluent-gray-50); 
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    margin-bottom: 10px;
+    display: flex; 
+    justify-content: space-between; 
+  
+    &:last-child {
+      margin-bottom: 0;
+    }
+  
+   
+     &::before {
+      content: attr(data-label); 
+       font-weight: 600;
+       margin-right: 8px;
+     }
+  }
