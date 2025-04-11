@@ -31,11 +31,11 @@ export class AmortizationService {
     const firstMonthInterest = roundToTwoDecimals(loanAmount * monthlyInterestRate);
 
     if (monthlyPayment <= firstMonthInterest + this.ZERO_THRESHOLD) {
-      let errorMsg = `Calculated monthly payment (${monthlyPayment.toFixed(2)} €) is insufficient to cover first month's interest (${firstMonthInterest.toFixed(2)} €) and reduce principal.`;
+      let errorMsg = `Die berechnete monatliche Rate (${monthlyPayment.toFixed(2)} €) ist nicht ausreichend, um die Zinsen des ersten Monats (${firstMonthInterest.toFixed(2)} €) zu decken und eine Tilgung zu ermöglichen.`; // German translation
       if (Math.abs(monthlyPayment - firstMonthInterest) < this.ZERO_THRESHOLD) {
-        errorMsg = `Calculated monthly payment (${monthlyPayment.toFixed(2)} €) exactly covers first month's interest (${firstMonthInterest.toFixed(2)} €). Loan principal will not be reduced.`;
+        errorMsg = `Die berechnete monatliche Rate (${monthlyPayment.toFixed(2)} €) deckt exakt die Zinsen des ersten Monats (${firstMonthInterest.toFixed(2)} €). Es findet keine Tilgung statt.`; // German translation
       }
-      errorMsg += " Please decrease interest rate or increase initial repayment percentage.";
+      errorMsg += " Bitte Zinssatz verringern oder anfängliche Tilgung erhöhen."; 
       throw new InsufficientRateError(errorMsg);
     }
 
