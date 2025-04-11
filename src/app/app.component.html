@@ -11,8 +11,9 @@
   
  
   @if (!calculationError) {
-    <app-amortization-table [amortizationPlan]="amortizationPlan"></app-amortization-table>
     <app-summary [summaryData]="summaryData"></app-summary>
+    <app-amortization-table [amortizationPlan]="amortizationPlan"></app-amortization-table>
+
   }
   <div class="footer">
     <p>&copy; 2023 Tilgungsplan-Rechner. Alle Rechte vorbehalten.</p>

@@ -2,43 +2,21 @@ import { Injectable } from '@angular/core';
 import { AmortizationEntry } from '../models/amortization-entry';
 import { LoanData } from '../models/loan-data';
 import { SummaryData } from '../models/summary-data';
-
-// --- Custom Error Types ---
-export class InvalidLoanDataError extends Error {
-  constructor(message: string) { super(message); this.name = 'InvalidLoanDataError'; }
-}
-export class InsufficientRateError extends Error {
-  constructor(message: string) { super(message); this.name = 'InsufficientRateError'; }
-}
-
-// --- Utility Functions ---
-function roundToTwoDecimals(value: number): number {
-  if (isNaN(value) || !isFinite(value)) {
-    console.warn(`Rounding encountered invalid value: ${value}. Returning 0.`);
-    return 0;
-  }
-  return Number(Math.round(Number(value + 'e+2')) + 'e-2');
-}
-function getMonthEndDate(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
-}
-function getNextMonthEndDate(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth() + 2, 0);
-}
+import { InvalidLoanDataError, InsufficientRateError } from '../errors/custom-errors';
+import { roundToTwoDecimals, getMonthEndDate, getNextMonthEndDate } from '../utils/helpers';
 
 /**
  * @Injectable
  * Service for calculating loan amortization schedules and summaries.
- * Uses negative balance convention as required.
+
  */
 @Injectable({
   providedIn: 'root'
 })
 export class AmortizationService {
-
   private readonly MONTHS_IN_YEAR = 12;
   private readonly PERCENT_FACTOR = 100;
-  private readonly ZERO_THRESHOLD = 0.005; // Half a cent tolerance
+  private readonly ZERO_THRESHOLD = 0.005; // Half a cent tolerance (arbitrarily chosen)
 
   calculateAmortizationPlan(loanData: LoanData): AmortizationEntry[] {
     if (!this.isValidLoanData(loanData)) {
@@ -49,7 +27,7 @@ export class AmortizationService {
 
     const monthlyInterestRate = interestRate / this.PERCENT_FACTOR / this.MONTHS_IN_YEAR;
     const numberOfPayments = interestFixation * this.MONTHS_IN_YEAR;
-    const monthlyPayment = this._calculateMonthlyPayment(loanAmount, interestRate, initialRepayment);
+    const monthlyPayment = this.calculateMonthlyPayment(loanAmount, interestRate, initialRepayment);
     const firstMonthInterest = roundToTwoDecimals(loanAmount * monthlyInterestRate);
 
     if (monthlyPayment <= firstMonthInterest + this.ZERO_THRESHOLD) {
@@ -64,16 +42,16 @@ export class AmortizationService {
     const amortizationEntries: AmortizationEntry[] = [];
     let currentDate = getMonthEndDate(new Date());
 
-    amortizationEntries.push(this._createDisbursementEntry(loanAmount, currentDate));
+    amortizationEntries.push(this.createDisbursementEntry(loanAmount, currentDate));
     currentDate = getNextMonthEndDate(currentDate);
 
     for (let i = 0; i < numberOfPayments; i++) {
       const previousBalance = amortizationEntries[amortizationEntries.length - 1].remainingDebt;
 
       if (Math.abs(previousBalance) < this.ZERO_THRESHOLD) {
-        amortizationEntries.push(this._createZeroEntry(currentDate));
+        amortizationEntries.push(this.createZeroEntry(currentDate));
       } else {
-        const nextEntry = this._calculateNextPaymentEntry(
+        const nextEntry = this.calculateNextPaymentEntry(
           previousBalance,
           monthlyPayment,
           monthlyInterestRate,
@@ -119,12 +97,12 @@ export class AmortizationService {
 
   // --- Private Helper Methods ---
 
-  private _calculateMonthlyPayment(loanAmount: number, interestRate: number, initialRepayment: number): number {
+  private calculateMonthlyPayment(loanAmount: number, interestRate: number, initialRepayment: number): number {
     const annualPayment = loanAmount * (interestRate / this.PERCENT_FACTOR + initialRepayment / this.PERCENT_FACTOR);
     return roundToTwoDecimals(annualPayment / this.MONTHS_IN_YEAR);
   }
 
-  private _createDisbursementEntry(loanAmount: number, date: Date): AmortizationEntry {
+  private createDisbursementEntry(loanAmount: number, date: Date): AmortizationEntry {
     const roundedAmount = roundToTwoDecimals(loanAmount);
     return {
       date: date,
@@ -141,7 +119,7 @@ export class AmortizationService {
    * Returns positive interest, positive repayment (principal portion), positive payment.
    * Returns negative or zero remainingDebt.
    */
-  private _calculateNextPaymentEntry(
+  private calculateNextPaymentEntry(
     previousBalance: number, // Negative or zero
     monthlyPayment: number, // Positive fixed payment
     monthlyInterestRate: number, // Positive rate
@@ -152,7 +130,7 @@ export class AmortizationService {
     if (previousBalance > 0) {
         console.error("Invalid state: previousBalance should be negative or zero.", previousBalance);
         // Handle error appropriately, maybe return a zero entry or throw
-        return this._createZeroEntry(currentDate);
+        return this.createZeroEntry(currentDate);
     }
 
     // Calculate positive interest amount based on the absolute value of the negative balance
@@ -208,7 +186,7 @@ export class AmortizationService {
   }
 
 
-  private _createZeroEntry(currentDate: Date): AmortizationEntry {
+  private createZeroEntry(currentDate: Date): AmortizationEntry {
     return {
       date: new Date(currentDate),
       remainingDebt: 0,
