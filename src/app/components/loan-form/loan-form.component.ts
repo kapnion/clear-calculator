@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoanData } from '../../models/loan-data';
@@ -15,7 +15,7 @@ import { greaterThanZeroValidator } from './loan-form.validators';
   templateUrl: './loan-form.component.html',
   styleUrls: ['./loan-form.component.scss']
 })
-export class LoanFormComponent implements OnInit {
+export class LoanFormComponent {
   @Output() loanDataSubmitted = new EventEmitter<LoanData>();
 
   loanForm!: FormGroup;
@@ -27,10 +27,6 @@ export class LoanFormComponent implements OnInit {
     this.initializeForm();
   }
 
-  ngOnInit(): void {
-    // ngOnInit is a good place for logic after component initialization
-    // If form initialization was complex, it could go here.
-  }
 
   private initializeForm(): void {
     this.loanForm = this.fb.group({
@@ -71,10 +67,10 @@ export class LoanFormComponent implements OnInit {
         initialRepayment: Number(formData[FORM_CONTROLS.INITIAL_REPAYMENT]),
         interestFixation: Number(formData[FORM_CONTROLS.INTEREST_FIXATION])
       };
-      console.log('Form Submitted:', loanData);
+
       this.loanDataSubmitted.emit(loanData);
     } else {
-      console.log("Form is invalid. Marking fields as touched.");
+
       this.loanForm.markAllAsTouched();
     }
   }

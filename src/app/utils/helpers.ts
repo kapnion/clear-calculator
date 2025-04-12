@@ -1,6 +1,6 @@
 export function roundToTwoDecimals(value: number): number {
   if (isNaN(value) || !isFinite(value)) {
-    console.warn(`Rounding encountered invalid value: ${value}. Returning 0.`);
+    console.warn(`Problem beim Runden des Wertes: ${value}. 0 wird als Ersatzwert verwendet.`);
     return 0;
   }
   return Number(Math.round(Number(value + 'e+2')) + 'e-2');
