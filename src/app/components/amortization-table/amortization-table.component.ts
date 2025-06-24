@@ -13,7 +13,12 @@ import { AmortizationEntry } from '../../models/amortization-entry';
 export class AmortizationTableComponent implements OnChanges {
   @Input() amortizationPlan: AmortizationEntry[] | null = null;
 
-  displayedColumns: string[] = ['date', 'remainingDebt', 'interest', 'repayment', 'payment'];
+  // Constants for better maintainability
+  private static readonly DISPLAYED_COLUMNS = ['date', 'remainingDebt', 'interest', 'repayment', 'payment'] as const;
+  private static readonly LOCALE = 'de-DE';
+  private static readonly CURRENCY = 'EUR';
+
+  readonly displayedColumns: string[] = [...AmortizationTableComponent.DISPLAYED_COLUMNS];
   dataSource: AmortizationEntry[] = [];
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -21,12 +26,24 @@ export class AmortizationTableComponent implements OnChanges {
       this.dataSource = [...this.amortizationPlan]; 
     }
   }
-
+  /**
+   * Formats a date according to the German locale.
+   * @param date The date to format
+   * @returns Formatted date string
+   */
   formatDate(date: Date): string {
-    return date.toLocaleDateString('de-DE');
+    return date.toLocaleDateString(AmortizationTableComponent.LOCALE);
   }
 
+  /**
+   * Formats a number as currency according to the German locale.
+   * @param value The numeric value to format
+   * @returns Formatted currency string
+   */
   formatCurrency(value: number): string {
-      return value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+    return value.toLocaleString(AmortizationTableComponent.LOCALE, { 
+      style: 'currency', 
+      currency: AmortizationTableComponent.CURRENCY 
+    });
   }
 }
