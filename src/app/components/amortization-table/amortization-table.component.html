@@ -1,28 +1,82 @@
 @if (amortizationPlan && amortizationPlan.length > 0) {
-    <table>
-      <thead>
-        <tr>
-          <th>Datum</th>
-          <th>Restschuld</th>
-          <th>Zinsen</th>
-          <th>Tilgung</th>
-          <th>Rate</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (entry of dataSource; track entry.date) { 
+  <div class="table-wrapper">
+    <div class="table-header">
+      <h3 class="table-title">Tilgungsplan</h3>
+      <div class="table-info">
+        <span class="entry-count">{{ dataSource.length }} Einträge</span>
+      </div>
+    </div>
+    
+    <div class="table-container">
+      <table class="modern-table">
+        <thead>
           <tr>
-            <td>{{ formatDate(entry.date) }}</td>
-            <td>{{ formatCurrency(entry.remainingDebt) }}</td>
-            <td>{{ formatCurrency(entry.interest) }}</td>
-            <td>{{ formatCurrency(entry.repayment) }}</td>
-            <td>{{ formatCurrency(entry.payment) }}</td>
+            <th class="date-column">
+              <div class="header-content">
+                <span class="header-icon">📅</span>
+                <span>Datum</span>
+              </div>
+            </th>
+            <th class="currency-column">
+              <div class="header-content">
+                <span class="header-icon">💰</span>
+                <span>Restschuld</span>
+              </div>
+            </th>
+            <th class="currency-column">
+              <div class="header-content">
+                <span class="header-icon">📊</span>
+                <span>Zinsen</span>
+              </div>
+            </th>
+            <th class="currency-column">
+              <div class="header-content">
+                <span class="header-icon">⬇️</span>
+                <span>Tilgung</span>
+              </div>
+            </th>
+            <th class="currency-column highlight">
+              <div class="header-content">
+                <span class="header-icon">💳</span>
+                <span>Rate</span>
+              </div>
+            </th>
           </tr>
-        }
-      </tbody>
-    </table>
-  } @else if (amortizationPlan === null) {
-    <p>Bitte Darlehensdaten eingeben und berechnen.</p>
-  } @else { 
-    <p>Keine Daten vorhanden. </p>
-  }
+        </thead>
+        <tbody>
+          @for (entry of dataSource; track entry.date; let i = $index) { 
+            <tr class="table-row" [attr.data-index]="i">
+              <td class="date-cell">
+                <span class="cell-content">{{ formatDate(entry.date) }}</span>
+              </td>
+              <td class="currency-cell" [class.low-debt]="entry.remainingDebt < 10000">
+                <span class="cell-content">{{ formatCurrency(entry.remainingDebt) }}</span>
+              </td>
+              <td class="currency-cell interest">
+                <span class="cell-content">{{ formatCurrency(entry.interest) }}</span>
+              </td>
+              <td class="currency-cell repayment">
+                <span class="cell-content">{{ formatCurrency(entry.repayment) }}</span>
+              </td>
+              <td class="currency-cell payment highlight">
+                <span class="cell-content">{{ formatCurrency(entry.payment) }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+} @else if (amortizationPlan === null) {
+  <div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>Bereit für die Berechnung</h3>
+    <p>Bitte geben Sie Ihre Darlehensdaten ein und starten Sie die Berechnung.</p>
+  </div>
+} @else { 
+  <div class="empty-state">
+    <div class="empty-icon">❌</div>
+    <h3>Keine Daten verfügbar</h3>
+    <p>Es konnten keine Tilgungsdaten generiert werden.</p>
+  </div>
+}
